@@ -59,7 +59,7 @@
 #endif // _WIN32
 
 #include "ftd2xx.h"
-#include "LibFT4222.h"
+#include "libft4222.h"
 
 
 // This is the Windows Platform specific section and contains the functions which
@@ -122,8 +122,8 @@ void MCU_Init(void)
     FT_STATUS ftStatus;
 
     DWORD numOfDevices = 0;
-    DWORD countSPI = USE_FT4222;
-    DWORD countGPIO = USE_FT4222;
+	DWORD countSPI = 0;
+	DWORD countGPIO = 0;
 
     ftStatus = FT_CreateDeviceInfoList(&numOfDevices);
 
@@ -147,7 +147,7 @@ void MCU_Init(void)
 
         printf("FT4222 device % d: ", iDev);
 
-        if (devInfo.SerialNumber[0] == 'A')
+		if( ! strcmp( devInfo.Description, "FT4222 A"))
         {
             if (countSPI == 0)
             {
@@ -164,7 +164,7 @@ void MCU_Init(void)
             countSPI--;
         }
 
-        if (devInfo.SerialNumber[0] == 'B')
+		if( ! strcmp( devInfo.Description, "FT4222 B"))
         {
             if (countGPIO == 0)
             {
@@ -202,7 +202,7 @@ void MCU_Init(void)
         // 1.25 MHz allows all EVE devices to initialise correctly
         // After initialisation the SPI speed can be increased in the MCU_Setup()
         // Clock is 80 MHz / 64 = 1.25 MHz
-        mcu_setup_spi(CLK_DIV_64);
+        mcu_setup_spi(CLK_DIV_64); //@PR is CLK_DIV_4
 
         ftStatus = FT4222_SetClock(ftHandleGPIO, SYS_CLK_80);
         if (FT_OK != ftStatus)
