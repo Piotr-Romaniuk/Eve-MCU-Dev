@@ -127,6 +127,12 @@ void EVE_Init(void)
     // Eliminate any false touches
     HAL_MemWrite16(EVE_REG_TOUCH_RZTHRESH, 1200);
 
+    HAL_MemWrite32( EVE_REG_TOUCH_OVERSAMPLE, 15);
+    HAL_MemWrite32( EVE_REG_TOUCH_CHARGE, 6000);
+#define TOUCH_FRAME_MODE 2
+#define TOUCH_CONT_MODE  3
+    HAL_MemWrite32( EVE_REG_TOUCH_MODE, TOUCH_FRAME_MODE);
+
     // turn recorded audio volume down
     HAL_MemWrite8(EVE_REG_VOL_PB, EVE_VOL_ZERO);
 

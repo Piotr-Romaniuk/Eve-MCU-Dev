@@ -226,7 +226,7 @@ void eve_display(void)
             
         EVE_COLOR_RGB(255, 100, 100);
         EVE_CMD_NUMBER(500, ypos, font, 0, max_x - min_x);
-        EVE_CMD_NUMBER(550, ypos, font, 0, max_y - min_y);
+        EVE_CMD_NUMBER(600, ypos, font, 0, max_y - min_y);
 
         EVE_COLOR_RGB(255, 255, 255);
         // Show raw and transformed touches when the screen is touched.
