@@ -223,7 +223,12 @@ void eve_display(void)
 	txt[0] = (cnt_ep%32)+32;	
 	txt[1] = 0;
         EVE_CMD_TEXT(400, ypos, font, 0, txt);
+            
+        EVE_COLOR_RGB(255, 100, 100);
+        EVE_CMD_NUMBER(500, ypos, font, 0, max_x - min_x);
+        EVE_CMD_NUMBER(550, ypos, font, 0, max_y - min_y);
 
+        EVE_COLOR_RGB(255, 255, 255);
         // Show raw and transformed touches when the screen is touched.
         if (touch_detect)
         {
@@ -273,11 +278,14 @@ void eve_display(void)
             xyr = EVE_LIB_MemRead32(EVE_REG_TOUCH_RAW_XY);
 	
 	    cnt++;
-
+static int cnt_smp;
 	    uint16_t x = xy >> 16;
 	    uint16_t y = xy & 0xFFFF;
-	    if( ((200 < x) && (x < 800 )) && ( y < 480 ))
-		n_points[ cnt% (sizeof(n_points)/sizeof(n_points[0]))] = xy;
+	    if( ((200 < x) && (x < 800 )) && ( y < 480 )){
+		n_points[ cnt_smp% (sizeof(n_points)/sizeof(n_points[0]))] = xy;
+		cnt_smp++;
+	    }
+
 
         }
         else if (key == button_recalibrate)
