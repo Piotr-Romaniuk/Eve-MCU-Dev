@@ -111,6 +111,59 @@ void eve_tohex8(uint32_t val, char *str)
     str[8] = '\0';
 }
 
+uint32_t n_points[30];
+
+uint16_t min_x, max_x, min_y, max_y;
+static int cnt;
+static int cnt_ep;
+void eve_extra_epilog_frame(void){
+	EVE_LINE_WIDTH( 1*8 );
+	EVE_COLOR_RGB(255,100,100);
+	int h = 0;
+	min_x = 65535;
+	min_y = 65535;
+	max_x = 0;
+	max_y = 0;
+			
+	EVE_BEGIN( EVE_BEGIN_LINES);
+	
+	for( unsigned int i=0;i<sizeof(n_points)/sizeof(n_points[0]);++i){
+		uint16_t x = n_points[i] >> 16;
+		uint16_t y = n_points[i] & 0xFFFF;
+
+		if( x > max_x ) max_x = x;
+		if( y > max_y ) max_y = y;
+		if( x < min_x ) min_x = x;
+		if( y < min_y ) min_y = y;
+
+		if( x >= 800 ) x = 800;
+		if( y >= 480 ) y = 480;
+		if( x < 5 ) x = 5;
+		if( y < 5 ) y = 5;
+
+		if( x < 800 && y < 480 ){
+            		EVE_VERTEX_FORMAT(0);
+			EVE_VERTEX2F(x-5,y);
+			EVE_VERTEX2F(x+5,y);
+			EVE_VERTEX2F(x,y-5);
+			EVE_VERTEX2F(x,y+5);
+			EVE_VERTEX2F(x-5+1,y+1);
+			EVE_VERTEX2F(x+5+1,y+1);
+			EVE_VERTEX2F(x+1,y-5+1);
+			EVE_VERTEX2F(x+1,y+5+1);
+
+
+			h++;
+		}
+//			EVE_END(); //TODO should be this at the end of lines?
+		printf("[%d] %d %d\n", i, x, y);
+	}
+	EVE_LINE_WIDTH( 1*16 );
+	printf(" %ld %ld h=%d %d-%d %d  %d-%d %d\n", cnt_ep++, cnt, h, 
+			min_x, max_x, max_x-min_x, min_y, max_y, max_y-min_y);
+}
+
+
 void eve_display(void)
 {
     int i;
@@ -132,6 +185,7 @@ void eve_display(void)
     eve_readcalib();
     
     do {
+	//    printf(" %d ", cnt );
         EVE_LIB_BeginCoProList();
         EVE_CMD_DLSTART();
         EVE_CLEAR_COLOR_RGB(0, 0, 0);
@@ -164,6 +218,11 @@ void eve_display(void)
 
         EVE_CMD_TEXT(10, ypos, font, 0, "X,Y:");
         EVE_CMD_TEXT(10, ypos + heights[font], font, 0, "Raw X,Y:");
+
+	char txt[40];
+	txt[0] = (cnt_ep%32)+32;	
+	txt[1] = 0;
+        EVE_CMD_TEXT(400, ypos, font, 0, txt);
 
         // Show raw and transformed touches when the screen is touched.
         if (touch_detect)
@@ -199,7 +258,8 @@ void eve_display(void)
             EVE_CMD_TEXT(widths[font] * 2 , ypos, font, 0, hexval);
             ypos += heights[font];
         }
-        
+
+	eve_extra_epilog_frame(); //additional graphics on the top	
         EVE_DISPLAY();
         EVE_CMD_SWAP();
         EVE_LIB_EndCoProList();
@@ -211,6 +271,14 @@ void eve_display(void)
             // Read the tag register on the device
             xy = EVE_LIB_MemRead32(EVE_REG_TOUCH_SCREEN_XY);
             xyr = EVE_LIB_MemRead32(EVE_REG_TOUCH_RAW_XY);
+	
+	    cnt++;
+
+	    uint16_t x = xy >> 16;
+	    uint16_t y = xy & 0xFFFF;
+	    if( ((200 < x) && (x < 800 )) && ( y < 480 ))
+		n_points[ cnt% (sizeof(n_points)/sizeof(n_points[0]))] = xy;
+
         }
         else if (key == button_recalibrate)
         {
